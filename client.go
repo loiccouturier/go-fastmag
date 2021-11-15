@@ -1,8 +1,10 @@
 package gofastmag
 
 import (
+	"bytes"
 	"encoding/csv"
 	"github.com/gocarina/gocsv"
+	"golang.org/x/text/encoding/charmap"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -200,5 +202,13 @@ func (c *client) call(uri string, data string) ([]byte, error) {
 		return nil, err
 	}
 
-	return responseData, err
+	dec := charmap.Windows1250.NewDecoder()
+	decodedResponseData, err := dec.Bytes(responseData)
+	if err != nil {
+		return nil, err
+	}
+
+	decodedResponseData = bytes.ReplaceAll(decodedResponseData, []byte{'"'}, []byte{})
+
+	return decodedResponseData, err
 }
